@@ -5,7 +5,7 @@ import java.util.List;
 
 
 public class AccountManagerImpl implements AccountManager {
-    AttemptCounter attempts = AttemptCounter.getInstance();
+
 
     private Person person;
 
@@ -127,16 +127,16 @@ public class AccountManagerImpl implements AccountManager {
 
     @Override
     public Person getPerson(String email, String password) throws TooManyLoginAttemptsException,WrongCredentialsException {
+        AttemptCounter attempts = AttemptCounter.getInstance();
         String csvFile = "C:/Users/anast/IdeaProjects/Lesson4/src/database/db.csv";
         BufferedReader br = null;
         String line = "";
-        String cvsSplitBy = ",";
         Person person = null;
         try{
             br = new BufferedReader(new FileReader(csvFile));
             while ((line = br.readLine()) != null) {
                 if(line.split(",")[0].equals(email) & line.split(",")[1].equals(password)){
-                    person = new Person(line.split(",")[0],line.split(",")[1]);
+                    person = new Person(line.split(",")[3],line.split(",")[2]);
                     attempts.count();
 
                 }
@@ -145,8 +145,16 @@ public class AccountManagerImpl implements AccountManager {
                 attempts.count();
                 throw new WrongCredentialsException("Wrong password or email");
             }
-        } catch (IOException e) {
+        } catch (IOException|WrongCredentialsException e) {
             e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return person;
